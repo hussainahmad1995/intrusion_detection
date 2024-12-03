@@ -19,4 +19,5 @@
 
 ## Methods
 - SVM
+- Kernel Regression
 - Transformers
