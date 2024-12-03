@@ -16,3 +16,7 @@
 > Next, the features are mapped to the visible neurons of an ensemble of autoenoders (KitNET https://github.com/ymirsky/KitNET-py).
 > Then, each autoencoder attempts to reconstruct the instance's features, and computes the reconstruction error in terms of root mean squared errors (RMSE).
 > Finally, the RMSEs are forwarded to an output autoencoder, which acts as a non-linear voting mechanism for the ensemble.
+
+## Methods
+- SVM
+- Transformers
