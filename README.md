@@ -2,9 +2,9 @@
 
 ## Datasets
 
-- Kitsune - <https://www.kaggle.com/datasets/ymirsky/network-attack-dataset-kitsune>
-- IDS2019 - <https://www.unb.ca/cic/datasets/ids-2018.html>
-- UNSW - <https://research.unsw.edu.au/projects/unsw-nb15-dataset>
+- Kitsune - <https://www.kaggle.com/datasets/ymirsky/network-attack-dataset-kitsune> (Michael)
+- IDS2019 - <https://www.unb.ca/cic/datasets/ids-2018.html> (Jiayi)
+- UNSW - <https://research.unsw.edu.au/projects/unsw-nb15-dataset> (Hussain)
 
 ### Kitsune
 
@@ -18,6 +18,6 @@
 > Finally, the RMSEs are forwarded to an output autoencoder, which acts as a non-linear voting mechanism for the ensemble.
 
 ## Methods
-- SVM
-- Kernel Regression
-- Transformers
+- SVM (Michael)
+- Kernel Regression (Hussain)
+- Transformers (Jiayi)
