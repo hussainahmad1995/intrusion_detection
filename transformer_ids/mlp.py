@@ -129,27 +129,22 @@ test_dataset = TensorDataset(torch.tensor(X_test, dtype=torch.float32).to("cuda"
 train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=X_test.shape[0], shuffle=False)
 
-# Transformer Classifier Model
-class TransformerClassifier(nn.Module):
-    def __init__(self, input_dim, n_heads, input_hidden_dim, hidden_dim, n_classes):
-        super().__init__()
-        self.fc_in = nn.Linear(input_dim, input_hidden_dim)
-        self.encoder_layer = nn.TransformerEncoderLayer(
-            d_model=input_hidden_dim, nhead=n_heads, dim_feedforward=hidden_dim
-        )
-        self.transformer_encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=2)
-        self.fc_out = nn.Linear(hidden_dim, n_classes)
-    
+class LinearClassifier(nn.Module):
+    def __init__(self, input_dim, n_classes):
+        super(LinearClassifier, self).__init__()
+        hidden_dim = 64
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.activation = nn.ReLU()  # Activation layer
+        self.fc2 = nn.Linear(hidden_dim, n_classes)
+
     def forward(self, x):
-        x = self.fc_in(x)
-        x = self.transformer_encoder(x)
-        x = self.fc_out(x)
-        #import pdb; pdb.set_trace()
+        x = self.fc1(x)
+        x = self.activation(x)
+        x = self.fc2(x)
         return x
 
 # Model, Loss, Optimizer
-model = TransformerClassifier(input_dim=input_dim, n_heads=n_heads, 
-                              input_hidden_dim=input_hidden_dim, hidden_dim=hidden_dim, n_classes=2).to("cuda")
+model = LinearClassifier(input_dim=input_dim, n_classes=2).to("cuda")
 criterion = nn.CrossEntropyLoss()
 #optimizer = torch.optim.AdamW(model.parameters(), lr=0.0005)
 optimizer = torch.optim.Adagrad(

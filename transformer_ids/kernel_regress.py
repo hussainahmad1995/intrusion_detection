@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import time
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.kernel_ridge import KernelRidge
+from sklearn.metrics import accuracy_score, classification_report
 
 def fixDataType(df_dataset):
     
@@ -118,80 +120,45 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 
-input_dim = X_train.shape[1]
-n_heads=4
-hidden_dim = 64
-input_hidden_dim = 64
+X_train = torch.tensor(X_train, dtype=torch.float32, device="cuda")
+X_test = torch.tensor(X_test, dtype=torch.float32, device="cuda")
 
-# DataLoaders
-train_dataset = TensorDataset(torch.tensor(X_train, dtype=torch.float32).to("cuda"), torch.tensor(y_train, dtype=torch.long).to("cuda"))
-test_dataset = TensorDataset(torch.tensor(X_test, dtype=torch.float32).to("cuda"), torch.tensor(y_test, dtype=torch.long).to("cuda"))
-train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=X_test.shape[0], shuffle=False)
+y_train = torch.tensor(y_train, dtype=torch.float32, device="cuda")
+y_test = torch.tensor(y_test, dtype=torch.float32, device="cuda")
 
-# Transformer Classifier Model
-class TransformerClassifier(nn.Module):
-    def __init__(self, input_dim, n_heads, input_hidden_dim, hidden_dim, n_classes):
-        super().__init__()
-        self.fc_in = nn.Linear(input_dim, input_hidden_dim)
-        self.encoder_layer = nn.TransformerEncoderLayer(
-            d_model=input_hidden_dim, nhead=n_heads, dim_feedforward=hidden_dim
-        )
-        self.transformer_encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=2)
-        self.fc_out = nn.Linear(hidden_dim, n_classes)
+def gaussian_kernel(X1, X2, sigma=1.0):
+    dist = torch.cdist(X1, X2, p=2) ** 2
+    K = torch.exp(-dist / (2 * sigma ** 2))
+    return K
+
+# Ridge Regression function
+def ridge_regression(X_train, y_train, X_test, sigma=1.0, alpha=1e-2):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    def forward(self, x):
-        x = self.fc_in(x)
-        x = self.transformer_encoder(x)
-        x = self.fc_out(x)
-        #import pdb; pdb.set_trace()
-        return x
+    # Move data to GPU
+    X_train = X_train
+    y_train = y_train.float()
+    X_test = X_test
+    
+    start = time.time()
+    # Compute the Gaussian kernel
+    K = gaussian_kernel(X_train, X_train, sigma)
+    
+    # Ridge regression closed-form solution
+    I = torch.eye(K.shape[0], device=device)
+    alpha_I = alpha * I
+    coeff = torch.linalg.solve(K + alpha_I, y_train)
+    print("Training time: ", time.time() - start)
+    
+    start = time.time()
+    # Predict on test set
+    K_test = gaussian_kernel(X_test, X_train, sigma)
+    y_pred = K_test @ coeff
+    print("Inferene time: ", time.time() - start)
+    return y_pred
 
-# Model, Loss, Optimizer
-model = TransformerClassifier(input_dim=input_dim, n_heads=n_heads, 
-                              input_hidden_dim=input_hidden_dim, hidden_dim=hidden_dim, n_classes=2).to("cuda")
-criterion = nn.CrossEntropyLoss()
-#optimizer = torch.optim.AdamW(model.parameters(), lr=0.0005)
-optimizer = torch.optim.Adagrad(
-        model.parameters(),
-        lr=0.01,             # Learning rate (adjust as necessary)
-        lr_decay=0,          # Optional: decay of learning rate (default is 0)
-        weight_decay=0.01,   # L2 regularization to prevent overfitting
-        initial_accumulator_value=0,  # Optional: initial accumulator for Adagrad
-        eps=1e-10            # Small constant to prevent division by zero
-    )
-# Training Loop
-total_time = time.time()
-for epoch in range(3):
-    start_time = time.time()
-    model.train()
-    total_loss = 0
-    train_losses = []
-    for X_batch, y_batch in train_loader:
-        optimizer.zero_grad()
-        outputs = model(X_batch)
-        loss = criterion(outputs, y_batch)
-        loss.backward()
-        optimizer.step()
-        total_loss += loss.item()
-        train_losses.append(loss.item())
-        
-    print(f"Epoch {epoch + 1}, Loss: {total_loss / len(train_loader)}, Time: {time.time() - start_time:.2f}s")
-total_time = time.time() - total_time
-print(f"Total Training Time: {total_time:.6f}s")
+y_pred = ridge_regression(X_train, y_train, X_test, sigma=1.0, alpha=1e-2)
 
-
-# Evaluation
-model.eval()
-total_time = time.time()
-correct = 0
-total = 0
-with torch.no_grad():
-    for X_batch, y_batch in test_loader:
-        outputs = model(X_batch)
-        _, predicted = torch.max(outputs, 1)
-        correct += (predicted == y_batch).sum().item()
-        total += y_batch.size(0)
-total_time = time.time() - total_time
-print(f"Total Inference Time: {total_time:.6f}s")
-print(f"Test Accuracy: {correct / total * 100:.6f}%")
+y_pred = (y_pred > 0.5).float()
+correct = (y_pred== y_test).sum().item()
+print("Test Accuracy: ", correct / y_test.shape[0])
