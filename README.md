@@ -37,6 +37,8 @@ git clone https://github.com/hussainahmad1995/intrusion_detection
 ### Build Paper
 
 Ensure you have a full TeX distribution and can invoke `latexmk`.
+Follow this link for installing a full TeX distribution:
+<https://www.latex-project.org/get/>
 For building the paper, run `make pdf`, or just `make`.
 Run `make pdf-clean` or just `make clean` to remove the intermediate files.
 
