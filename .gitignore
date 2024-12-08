@@ -1,1 +1,3 @@
 obj/
+# Keep personal tooling and whatever custom files here so they do not get commited
+.local/

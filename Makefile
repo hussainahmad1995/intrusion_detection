@@ -1,5 +1,6 @@
 # Makefile for a basic latex project
 .PHONY: all pdf pdf-clean clean
+ROOT_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 OBJ_DIR := ./obj
 BIN_DIR := ./bin
 
