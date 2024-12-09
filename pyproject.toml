@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "final-project"
+version = "0.1.0"
+description = "Final project for graduate student level course in theoretical machine learning"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10, <3.13"
+torch = "^2.5.1"
+scikit-learn = "^1.5.2"
+pandas = "^2.2.3"
+numpy = "^2.2.0"
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
