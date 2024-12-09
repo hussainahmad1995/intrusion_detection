@@ -123,9 +123,14 @@ n_heads=4
 hidden_dim = 64
 input_hidden_dim = 64
 
+# Set up pytorch
+# Detect if cuda is available to use
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
+
 # DataLoaders
-train_dataset = TensorDataset(torch.tensor(X_train, dtype=torch.float32).to("cuda"), torch.tensor(y_train, dtype=torch.long).to("cuda"))
-test_dataset = TensorDataset(torch.tensor(X_test, dtype=torch.float32).to("cuda"), torch.tensor(y_test, dtype=torch.long).to("cuda"))
+train_dataset = TensorDataset(torch.tensor(X_train, dtype=torch.float32).to(device), torch.tensor(y_train, dtype=torch.long).to(device))
+test_dataset = TensorDataset(torch.tensor(X_test, dtype=torch.float32).to(device), torch.tensor(y_test, dtype=torch.long).to(device))
 train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=X_test.shape[0], shuffle=False)
 
@@ -149,7 +154,7 @@ class TransformerClassifier(nn.Module):
 
 # Model, Loss, Optimizer
 model = TransformerClassifier(input_dim=input_dim, n_heads=n_heads, 
-                              input_hidden_dim=input_hidden_dim, hidden_dim=hidden_dim, n_classes=2).to("cuda")
+                              input_hidden_dim=input_hidden_dim, hidden_dim=hidden_dim, n_classes=2).to(device)
 criterion = nn.CrossEntropyLoss()
 #optimizer = torch.optim.AdamW(model.parameters(), lr=0.0005)
 optimizer = torch.optim.Adagrad(

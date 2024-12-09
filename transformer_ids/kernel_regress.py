@@ -119,12 +119,16 @@ X_train = scaler.fit_transform(X_train)
 
 X_test = scaler.transform(X_test)
 
+# Set up pytorch
+# Detect if cuda is available to use
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
 
-X_train = torch.tensor(X_train, dtype=torch.float32, device="cuda")
-X_test = torch.tensor(X_test, dtype=torch.float32, device="cuda")
+X_train = torch.tensor(X_train, dtype=torch.float32, device=device)
+X_test = torch.tensor(X_test, dtype=torch.float32, device=device)
 
-y_train = torch.tensor(y_train, dtype=torch.float32, device="cuda")
-y_test = torch.tensor(y_test, dtype=torch.float32, device="cuda")
+y_train = torch.tensor(y_train, dtype=torch.float32, device=device)
+y_test = torch.tensor(y_test, dtype=torch.float32, device=device)
 
 def gaussian_kernel(X1, X2, sigma=1.0):
     dist = torch.cdist(X1, X2, p=2) ** 2
